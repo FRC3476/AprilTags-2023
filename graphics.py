@@ -5,7 +5,7 @@ white = (255, 255, 255)
 width_px = 4
 
 
-def annotate(frame, detection, n_pose):
+def annotate(frame, detection):
     corners = detection.corners
     corner1 = (int(corners[0][0]), int(corners[0][1]))
     corner2 = (int(corners[1][0]), int(corners[1][1]))
@@ -18,9 +18,5 @@ def annotate(frame, detection, n_pose):
     cv2.line(frame, corner3, corner4, light_blue, width_px)
     cv2.line(frame, corner4, corner1, light_blue, width_px)
 
-    cv2.putText(frame, "x: " + str(n_pose[0]), (int(corners[1][0] + 50), int(corners[1][1])),
-                cv2.FONT_HERSHEY_SIMPLEX, 1, white)
-    cv2.putText(frame, "y: " + str(n_pose[1]), (int(corners[1][0] + 50), int(corners[1][1] + 30)),
-                cv2.FONT_HERSHEY_SIMPLEX, 1, white)
-    cv2.putText(frame, "z: " + str(n_pose[2]), (int(corners[1][0] + 50), int(corners[1][1] + 60)),
+    cv2.putText(frame, "ID: " + str(detection.tag_id), (int(corners[1][0] + 10), int(corners[1][1])),
                 cv2.FONT_HERSHEY_SIMPLEX, 1, white)
