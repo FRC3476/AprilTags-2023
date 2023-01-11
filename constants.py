@@ -9,3 +9,6 @@ CAM_FX = 480
 CAM_FY = 480
 CAM_WIDTH = 640
 CAM_HEIGHT = 480
+
+# Networking
+ROBOT_IP = "localhost"

@@ -1,8 +1,11 @@
 from _pynetworktables import NetworkTables
 
+import constants
+
 # Will need to set with ip of roboRIO when on the robot
-NetworkTables.initialize(server="localhost")
+NetworkTables.initialize(server=constants.ROBOT_IP)
 vision_table = NetworkTables.getDefault().getTable("Vision")
+config_table = NetworkTables.getDefault().getTable("Vision Config")
 
 
 def log_pos(tag_id, x, y, z):
@@ -12,11 +15,19 @@ def log_pos(tag_id, x, y, z):
 
 
 def log_looptime(time):
-    vision_table.getEntry("Vision_Looptime").setValue(time)
+    vision_table.getEntry("Vision Looptime").setValue(time)
 
 
 def log_camera_open(is_open):
     vision_table.getEntry("Is Camera Open").setValue(is_open)
+
+
+def get_exposure():
+    return config_table.getEntry("Exposure").getDouble()
+
+
+def get_cam_type():
+    return config_table.getEntry("Camera Type").getDouble()
 
 
 def flush():
