@@ -6,7 +6,7 @@ import graphics
 import network
 
 initialize = True
-cam_config = cameraconfig.Config()
+first_initialization = True
 
 # Main Control Loop
 while True:
@@ -18,22 +18,24 @@ while True:
 
     if initialize:
         try:
-            if cam is None:
-                # Camera has not been initialized before
-                cam = camera.Camera(cam_config)
+            if first_initialization:
+                cam_config = cameraconfig.Config()
+                first_initialization = False
             else:
-                # Terminate old camera if camera has been initialized before
                 cam.terminate()
-                cam = camera.Camera(cam_config)
+                cam_config.update_config()
+
+            # Terminate old camera if camera has been initialized before
+            cam = camera.Camera(cam_config)
         except Exception:
             # Try again if camera failed to initialize
+            network.send_status("Camera Failed to initialize.")
             continue
 
         initialize = False
 
     # Check if camera settings changed
     if network.update_state.check_update():
-        cam.config.update_config()
         initialize = True
         continue
 
@@ -42,6 +44,7 @@ while True:
         detections, gray_frame, timestamp = cam.process_frame()
     except Exception:
         # Go back to the top of the loop if failed
+        network.send_status("Error: Failed to process frame.")
         continue
 
     for detection in detections:

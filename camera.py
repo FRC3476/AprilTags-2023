@@ -22,8 +22,8 @@ class Camera:
             cfg = rs.config()
 
             try:
-                cfg.enable_stream(rs.stream.color, self.config.x_resolution, self.config.y_resolution, rs.format.rgb8,
-                                  self.config.framerate)
+                cfg.enable_stream(rs.stream.color, self.config.x_resolution, self.config.y_resolution,
+                                  rs.format.rgb8, self.config.framerate)
                 profile = self.pipeline.start(cfg)
             except Exception:
                 network.send_status("Error: Could not enable depth camera stream.")
@@ -100,7 +100,8 @@ class Camera:
     # Returns detections along with timestamp
     def process_frame(self):
 
-        if self.config.is_depth_cam:
+        if self.config.cam_type == 0:
+
             # Wait for frames
             rs_frames = self.pipeline.wait_for_frames()
 

@@ -18,7 +18,7 @@ def initialize():
 
 # Returns true if connected
 def is_connected():
-    return vision_misc_table.getBoolean("connection_flag", False)
+    return vision_misc_table.getBoolean("Connection Flag", False)
 
 
 def value_changed(key, value, isNew):
@@ -53,7 +53,7 @@ def get_cam_type():
     cam_type = config_table.getEntry("Camera Type").getDouble(0)
 
     # If invalid camera type
-    if not (cam_type == 0 or cam_type == 1):
+    if cam_type != 0 and cam_type != 1:
         send_status("Error: Invalid camera type: " + str(cam_type))
         return 0
     else:
@@ -65,15 +65,15 @@ def get_port():
 
 
 def get_x_res():
-    return config_table.getEntry("X Resolution").getDouble(1280)
+    return config_table.getEntry("X Resolution").getDouble(640)
 
 
 def get_y_res():
-    return config_table.getEntry("Y Resolution").getDouble(800)
+    return config_table.getEntry("Y Resolution").getDouble(480)
 
 
 def get_framerate():
-    return config_table.getEntry("Framerate").getDouble(60)
+    return config_table.getEntry("Framerate").getDouble(30)
 
 
 # Intrinsics only used here if not the realsense depth camera

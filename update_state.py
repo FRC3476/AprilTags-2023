@@ -1,7 +1,7 @@
 class UpdateState:
 
     def __init__(self):
-        self.do_cam_update = True
+        self.do_cam_update = False
 
     def check_update(self):
         if (self.do_cam_update):
