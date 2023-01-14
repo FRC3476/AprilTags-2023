@@ -1,5 +1,5 @@
 # Tags
-TAG_FAMILY = "tag36h11"
+TAG_FAMILY = "tag16h5"
 TAG_SIZE_M = .2
 
 # Networking

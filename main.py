@@ -64,7 +64,7 @@ while True:
     if cam.config.do_stream:
         # Send the gray_frame over camera stream
         cv2.imshow("Test", gray_frame)
-        cv2.waitKey(0)
+        cv2.waitKey(1)
 
     # End of profiling
     network.log_looptime(time.time() - start_time)
