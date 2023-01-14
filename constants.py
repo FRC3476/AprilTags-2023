@@ -1,14 +1,6 @@
-CAMERA_PORT = 1
-CAMERA_EXPOSURE = 4
-
-ENABLE_GRAPHICS = True
-USE_DEPTH_CAM = True
-
-# Cam intrinsics
-CAM_FX = 480
-CAM_FY = 480
-CAM_WIDTH = 640
-CAM_HEIGHT = 480
+# Tags
+TAG_FAMILY = "tag36h11"
+TAG_SIZE_M = .2
 
 # Networking
 ROBOT_IP = "localhost"
