@@ -1,5 +1,7 @@
 import time
 
+import cv2
+
 import camera
 import cameraconfig
 import graphics
@@ -61,7 +63,7 @@ while True:
 
     if cam.config.do_stream:
         # Send the gray_frame over camera stream
-        print("test")
+        cv2.imshow("Test", gray_frame)
 
     # End of profiling
     network.log_looptime(time.time() - start_time)
