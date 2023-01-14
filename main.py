@@ -15,6 +15,7 @@ while True:
     if not network.is_connected():
         # If network check connection returns true, then we are not connected
         network.initialize()
+        continue
 
     if initialize:
         try:
@@ -24,12 +25,16 @@ while True:
             else:
                 cam.terminate()
                 cam_config.update_config()
+        except Exception:
+            continue
 
-            # Terminate old camera if camera has been initialized before
+        try:
+            # Create a new camera
             cam = camera.Camera(cam_config)
         except Exception:
             # Try again if camera failed to initialize
-            network.send_status("Camera Failed to initialize.")
+            # Next run needs to be in first_initialization mode because it may try to terminate an inproperly initialized camera
+            first_initialization = True
             continue
 
         initialize = False
@@ -44,7 +49,6 @@ while True:
         detections, gray_frame, timestamp = cam.process_frame()
     except Exception:
         # Go back to the top of the loop if failed
-        network.send_status("Error: Failed to process frame.")
         continue
 
     for detection in detections:

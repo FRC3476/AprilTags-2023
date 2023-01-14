@@ -21,9 +21,10 @@ def is_connected():
     return vision_misc_table.getBoolean("Connection Flag", False)
 
 
-def value_changed(key, value, isNew):
+def value_changed(key, value, isNew, t):
+    # Table generation itself can trigger this, so it is excluded here
     send_status("Updating Config")
-    update_state.do_cam_update = True
+    update_state.schedule_update()
 
 
 # Add listener
@@ -46,7 +47,7 @@ def log_looptime(time):
 
 
 def get_exposure():
-    return config_table.getEntry("Exposure").getDouble(4)
+    return int(config_table.getEntry("Exposure").getDouble(150))
 
 
 def get_cam_type():
@@ -65,15 +66,15 @@ def get_port():
 
 
 def get_x_res():
-    return config_table.getEntry("X Resolution").getDouble(640)
+    return int(config_table.getEntry("X Resolution").getDouble(1280))
 
 
 def get_y_res():
-    return config_table.getEntry("Y Resolution").getDouble(480)
+    return int(config_table.getEntry("Y Resolution").getDouble(800))
 
 
 def get_framerate():
-    return config_table.getEntry("Framerate").getDouble(30)
+    return int(config_table.getEntry("Framerate").getDouble(30))
 
 
 # Intrinsics only used here if not the realsense depth camera
@@ -94,7 +95,7 @@ def get_cy():
 
 
 def get_threads():
-    return config_table.getEntry("threads").getDouble(4)
+    return int(config_table.getEntry("Threads").getDouble(4))
 
 
 def get_do_stream():
