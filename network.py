@@ -1,14 +1,15 @@
 from _pynetworktables import NetworkTables
 
 import constants
-import main
-import network
+import update_state
 
 # Will need to set with ip of roboRIO when on the robot
 NetworkTables.initialize(server=constants.ROBOT_IP)
 vision_table = NetworkTables.getDefault().getTable("Vision")
 vision_misc_table = NetworkTables.getDefault().getTable("Vision Misc")
 config_table = NetworkTables.getDefault().getTable("Vision Config")
+
+update_state = update_state.UpdateState()
 
 
 def initialize():
@@ -21,8 +22,8 @@ def is_connected():
 
 
 def value_changed(key, value, isNew):
-    network.send_status("Updating Config")
-    main.cam_config.update_config()
+    send_status("Updating Config")
+    update_state.do_cam_update = True
 
 
 # Add listener
@@ -30,7 +31,7 @@ config_table.addEntryListener(value_changed)
 
 
 def send_status(exception):
-    vision_misc_table.getEntry("Latest Statusn").setString(str(exception))
+    vision_misc_table.getEntry("Latest Status").setString(str(exception))
 
 
 def log_pos(tag_id, x, y, z, timestamp):
@@ -52,7 +53,7 @@ def get_cam_type():
     cam_type = config_table.getEntry("Camera Type").getDouble(0)
 
     # If invalid camera type
-    if (cam_type != 0 or cam_type != 1):
+    if not (cam_type == 0 or cam_type == 1):
         send_status("Error: Invalid camera type: " + str(cam_type))
         return 0
     else:

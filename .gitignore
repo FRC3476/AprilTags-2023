@@ -12,3 +12,6 @@ __pycache__/constants.cpython-39.pyc
 .idea/AprilTags.iml
 .idea/misc.xml
 .idea/AprilTags.iml
+__pycache__/update_state.cpython-39.pyc
+__pycache__/cameraconfig.cpython-39.pyc
+__pycache__/camera.cpython-39.pyc

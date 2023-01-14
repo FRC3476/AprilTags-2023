@@ -31,6 +31,12 @@ while True:
 
         initialize = False
 
+    # Check if camera settings changed
+    if network.update_state.check_update():
+        cam.config.update_config()
+        initialize = True
+        continue
+
     # Get detections
     try:
         detections, gray_frame, timestamp = cam.process_frame()
