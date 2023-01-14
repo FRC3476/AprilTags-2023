@@ -3,4 +3,4 @@ TAG_FAMILY = "tag36h11"
 TAG_SIZE_M = .2
 
 # Networking
-ROBOT_IP = "localhost"
+ROBOT_IP = "10.34.76.2"
