@@ -12,6 +12,10 @@ cam_config = cameraconfig.Config()
 while True:
     start_time = time.time()
 
+    if not network.is_connected():
+        # If network check connection returns true, then we are not connected
+        network.initialize()
+
     if initialize:
         try:
             if cam is None:

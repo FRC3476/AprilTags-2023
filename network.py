@@ -7,7 +7,17 @@ import network
 # Will need to set with ip of roboRIO when on the robot
 NetworkTables.initialize(server=constants.ROBOT_IP)
 vision_table = NetworkTables.getDefault().getTable("Vision")
+vision_misc_table = NetworkTables.getDefault().getTable("Vision Misc")
 config_table = NetworkTables.getDefault().getTable("Vision Config")
+
+
+def initialize():
+    NetworkTables.initialize(server=constants.ROBOT_IP)
+
+
+# Returns true if connected
+def is_connected():
+    return vision_misc_table.getBoolean("connection_flag", False)
 
 
 def value_changed(key, value, isNew):
@@ -20,7 +30,7 @@ config_table.addEntryListener(value_changed)
 
 
 def send_status(exception):
-    vision_table.getEntry("Latest Statusn").setString(str(exception))
+    vision_misc_table.getEntry("Latest Statusn").setString(str(exception))
 
 
 def log_pos(tag_id, x, y, z, timestamp):
@@ -31,7 +41,7 @@ def log_pos(tag_id, x, y, z, timestamp):
 
 
 def log_looptime(time):
-    vision_table.getEntry("Vision Looptime").setValue(time)
+    vision_misc_table.getEntry("Vision Looptime").setValue(time)
 
 
 def get_exposure():
