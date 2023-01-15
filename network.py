@@ -38,7 +38,7 @@ def send_status(exception):
 
 def log_pos(tag_id, x, y, z, rot, timestamp):
     quaternion = Rotation.from_matrix(rot).as_quat()
-   
+
     vision_table.getEntry(str(tag_id)).setValue(
         [float(x), float(y), float(z), float(quaternion[0]), float(quaternion[1]), float(quaternion[2]),
          float(quaternion[3]), float(timestamp)])
@@ -101,7 +101,7 @@ def get_threads():
 
 
 def get_do_stream():
-    return config_table.getEntry("Do Stream").getBoolean(True)
+    return config_table.getEntry("Do Stream").getBoolean(False)
 
 
 def flush():
