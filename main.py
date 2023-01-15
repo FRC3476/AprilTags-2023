@@ -12,8 +12,9 @@ first_initialization = True
 
 # Main Control Loop
 while True:
-    start_time = time.time()
 
+    start_time = time.time()
+    
     if not network.is_connected():
         # If network check connection returns true, then we are not connected
         network.initialize()

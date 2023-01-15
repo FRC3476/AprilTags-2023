@@ -105,7 +105,7 @@ class Camera:
             # Wait for frames
             rs_frames = self.pipeline.wait_for_frames()
 
-            timestamp = time.time()
+            timestamp = rs_frames.get_timestamp()
 
             # Get color frame
             rs_color_frame = rs_frames.get_color_frame()
