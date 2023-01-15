@@ -55,11 +55,13 @@ while True:
 
     for detection in detections:
 
-        # Annotate and send the stream if set to true
-        if cam.config.do_stream:
-            graphics.annotate(gray_frame, detection)
+        if detection.hamming == 0 and detection.tag_id >= 1 and detection.tag_id <= 8:
+            # Annotate and send the stream if set to true
+            if cam.config.do_stream:
+                graphics.annotate(gray_frame, detection)
 
-        network.log_pos(detection.tag_id, detection.pose_t[0], detection.pose_t[1], detection.pose_t[2], timestamp)
+            network.log_pos(detection.tag_id, detection.pose_t[0], detection.pose_t[1], detection.pose_t[2],
+                            detection.pose_R, timestamp)
 
     if cam.config.do_stream:
         # Send the gray_frame over camera stream
