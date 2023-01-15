@@ -92,7 +92,7 @@ class Camera:
             raise Exception("Error: Invalid camera type: " + str(self.config.cam_type))
 
         try:
-            self.tag_detector = Detector(families=constants.TAG_FAMILY, nthreads=self.config.threads, hamming=0)
+            self.tag_detector = Detector(families=constants.TAG_FAMILY, nthreads=self.config.threads)
         except Exception:
             network.send_status("Error: Invalid number of threads: " + str(self.config.threads))
             raise Exception("Error: Invalid number of threads: " + str(self.config.threads))

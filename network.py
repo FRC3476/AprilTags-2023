@@ -1,4 +1,5 @@
 from _pynetworktables import NetworkTables
+from scipy.spatial.transform import Rotation
 
 import constants
 import update_state
@@ -35,11 +36,12 @@ def send_status(exception):
     vision_misc_table.getEntry("Latest Status").setString(str(exception))
 
 
-def log_pos(tag_id, x, y, z, timestamp):
-    vision_table.getEntry(str(tag_id) + ":x").setValue(float(x))
-    vision_table.getEntry(str(tag_id) + ":y").setValue(float(y))
-    vision_table.getEntry(str(tag_id) + ":z").setValue(float(z))
-    vision_table.getEntry(str(tag_id) + ":" + str(timestamp))
+def log_pos(tag_id, x, y, z, rot, timestamp):
+    quaternion = Rotation.from_matrix(rot).as_quat()
+   
+    vision_table.getEntry(str(tag_id)).setValue(
+        [float(x), float(y), float(z), float(quaternion[0]), float(quaternion[1]), float(quaternion[2]),
+         float(quaternion[3]), float(timestamp)])
 
 
 def log_looptime(time):
@@ -99,7 +101,7 @@ def get_threads():
 
 
 def get_do_stream():
-    return config_table.getEntry("Do Stream").getBoolean(False)
+    return config_table.getEntry("Do Stream").getBoolean(True)
 
 
 def flush():
