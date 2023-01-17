@@ -43,9 +43,6 @@ def log_pos(tag_id, x, y, z, rot, timestamp):
 
     latency = (time.time() * 1000) - timestamp
 
-    # r = Rotation.from_matrix(rot).as_euler("xyz")
-    # print("x: {}, y: {}, z: {}".format(math.degrees(r[0]), math.degrees(r[1]), math.degrees(r[2])))
-
     vision_table.getEntry(str(tag_id)).setValue(
         [float(x), float(y), float(z), float(quaternion[0]), float(quaternion[1]), float(quaternion[2]),
          float(quaternion[3]), float(latency)])

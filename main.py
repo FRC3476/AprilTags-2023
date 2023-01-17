@@ -14,10 +14,12 @@ first_initialization = True
 while True:
 
     start_time = time.time()
-    
+
     if not network.is_connected():
         # If network check connection returns true, then we are not connected
         network.initialize()
+        # CameraServer.enableLogging()
+
         continue
 
     if initialize:
@@ -52,6 +54,8 @@ while True:
         detections, gray_frame, timestamp = cam.process_frame()
     except Exception:
         # Go back to the top of the loop if failed
+        # Tries to reinitialize the camera if it could not find a frame
+        initialize = True
         continue
 
     for detection in detections:
