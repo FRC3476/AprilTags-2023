@@ -1,6 +1,6 @@
 import time
 
-import cv2
+from cscore import CameraServer
 
 import camera
 import cameraconfig
@@ -18,7 +18,7 @@ while True:
     if not network.is_connected():
         # If network check connection returns true, then we are not connected
         network.initialize()
-        # CameraServer.enableLogging()
+        CameraServer.enableLogging()
 
         continue
 
@@ -30,6 +30,7 @@ while True:
             else:
                 cam.terminate()
                 cam_config.update_config()
+
         except Exception:
             continue
 
@@ -41,6 +42,9 @@ while True:
             # Next run needs to be in first_initialization mode because it may try to terminate an inproperly initialized camera
             first_initialization = True
             continue
+
+        # Initializes camera server with parameters
+        camera_server = CameraServer.putVideo("Vision", cam_config.x_resolution, cam_config.y_resolution)
 
         initialize = False
 
@@ -60,7 +64,7 @@ while True:
 
     for detection in detections:
 
-        if detection.hamming == 0 and detection.tag_id >= 1 and detection.tag_id <= 8:
+        if detection.hamming == 0 and detection.tag_id >= 1 and detection.tag_id <= 8 and detection.decision_margin > 1:
             # Annotate and send the stream if set to true
             if cam.config.do_stream:
                 graphics.annotate(gray_frame, detection)
@@ -70,8 +74,12 @@ while True:
 
     if cam.config.do_stream:
         # Send the gray_frame over camera stream
-        cv2.imshow("Test", gray_frame)
-        cv2.waitKey(1)
+        try:
+            camera_server.putFrame(gray_frame)
+        except:
+            network.send_status("Error: Could not send frame to camera server.")
+            initialize = True
+            continue
 
     # End of profiling
     network.log_looptime(time.time() - start_time)
