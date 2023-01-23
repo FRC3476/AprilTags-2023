@@ -9,6 +9,7 @@ import network
 
 initialize = True
 first_initialization = True
+first_cam_initialization = True
 
 # Main Control Loop
 while True:
@@ -17,15 +18,17 @@ while True:
 
     if not network.is_connected():
         # If network check connection returns true, then we are not connected
-        network.initialize()
-        CameraServer.enableLogging()
-
+        # network.initialize()
+        
         continue
+
 
     if initialize:
         try:
             if first_initialization:
                 cam_config = cameraconfig.Config()
+                CameraServer.enableLogging()
+                camera_server = CameraServer.putVideo("Vision", 640, 480)
                 first_initialization = False
             else:
                 cam.terminate()
@@ -42,10 +45,7 @@ while True:
             # Next run needs to be in first_initialization mode because it may try to terminate an inproperly initialized camera
             first_initialization = True
             continue
-
-        # Initializes camera server with parameters
-        camera_server = CameraServer.putVideo("Vision", cam_config.x_resolution, cam_config.y_resolution)
-
+        
         initialize = False
 
     # Check if camera settings changed
@@ -55,7 +55,7 @@ while True:
 
     # Get detections
     try:
-        detections, gray_frame, timestamp = cam.process_frame()
+        detections, gray_frame, timestamp, color_frame = cam.process_frame()
     except Exception:
         # Go back to the top of the loop if failed
         # Tries to reinitialize the camera if it could not find a frame
@@ -75,7 +75,8 @@ while True:
     if cam.config.do_stream:
         # Send the gray_frame over camera stream
         try:
-            camera_server.putFrame(gray_frame)
+            print("test send")
+            # camera_server.putFrame(color_frame)
         except:
             network.send_status("Error: Could not send frame to camera server.")
             initialize = True
