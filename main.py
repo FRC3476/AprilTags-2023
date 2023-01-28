@@ -1,7 +1,5 @@
 import time
 
-from cscore import CameraServer
-
 import camera
 import cameraconfig
 import graphics
@@ -18,17 +16,14 @@ while True:
 
     if not network.is_connected():
         # If network check connection returns true, then we are not connected
-        # network.initialize()
-        
-        continue
+        network.initialize()
 
+        continue
 
     if initialize:
         try:
             if first_initialization:
                 cam_config = cameraconfig.Config()
-                CameraServer.enableLogging()
-                camera_server = CameraServer.putVideo("Vision", 640, 480)
                 first_initialization = False
             else:
                 cam.terminate()
@@ -45,7 +40,7 @@ while True:
             # Next run needs to be in first_initialization mode because it may try to terminate an inproperly initialized camera
             first_initialization = True
             continue
-        
+
         initialize = False
 
     # Check if camera settings changed
@@ -75,8 +70,7 @@ while True:
     if cam.config.do_stream:
         # Send the gray_frame over camera stream
         try:
-            print("test send")
-            # camera_server.putFrame(color_frame)
+            print("")
         except:
             network.send_status("Error: Could not send frame to camera server.")
             initialize = True
