@@ -21,7 +21,7 @@ def initialize():
 
 # Returns true if connected
 def is_connected():
-    return vision_misc_table.getBoolean("Connection Flag", False)
+    return NetworkTables.isConnected()
 
 
 def value_changed(key, value, isNew, t):
