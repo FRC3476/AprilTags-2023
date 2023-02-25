@@ -136,7 +136,7 @@ class Camera:
         detections = self.tag_detector.detect(img=gray_frame, estimate_tag_pose=True,
                                               camera_params=(self.fx, self.fy, self.cx, self.cy),
                                               tag_size=constants.TAG_SIZE_M)
-        return detections, gray_frame, timestamp, color_frame
+        return detections, timestamp, color_frame
 
     def terminate(self):
         try:

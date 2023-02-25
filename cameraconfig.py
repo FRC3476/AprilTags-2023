@@ -20,3 +20,5 @@ class Config:
         self.cy = network.get_cy()
         self.threads = network.get_threads()
         self.do_stream = network.get_do_stream()
+        self.stream_port = network.get_stream_port()
+        self.stream_ip = network.get_stream_ip()

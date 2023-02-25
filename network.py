@@ -108,5 +108,13 @@ def get_do_stream():
     return config_table.getEntry("Do Stream").getBoolean(False)
 
 
+def get_stream_port():
+    return config_table.getEntry("Stream Port").getDouble(5810)
+
+
+def get_stream_ip():
+    return config_table.getEntry("Stream Ip").getString("10.167.1.44")
+
+
 def flush():
     NetworkTables.getDefault().flush()
