@@ -42,14 +42,20 @@ while True:
             # Create a new camera
             cam = camera.Camera(cam_config)
 
-            if cam.config.do_stream:
-                sender = imagezmq.ImageSender(
-                    connect_to="tcp://" + str(cam_config.stream_ip) + ":" + str(cam_config.stream_port))
         except Exception:
             # Try again if camera failed to initialize
             # Next run needs to be in first_initialization mode because it may try to terminate an inproperly initialized camera
             first_initialization = True
             continue
+
+        if cam.config.do_stream:
+            try:
+                sender = imagezmq.ImageSender(
+                    connect_to="tcp://" + str(cam_config.stream_ip) + ":" + str(cam_config.stream_port))
+            except Exception:
+                network.send_status(
+                    "Can not connect to: " + "tcp://" + str(cam_config.stream_ip) + ":" + str(cam_config.stream_port))
+                continue
 
         initialize = False
 
