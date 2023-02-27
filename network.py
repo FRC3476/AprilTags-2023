@@ -113,7 +113,7 @@ def get_stream_port():
 
 
 def get_stream_ip():
-    return config_table.getEntry("Stream Ip").getString("10.34.76.255")
+    return config_table.getEntry("Stream Ip").getString("10.34.76.225")
 
 
 def get_decision_margin():

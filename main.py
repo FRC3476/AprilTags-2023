@@ -4,6 +4,7 @@ import time
 import cv2
 import imagezmq
 import imutils
+from ping3 import ping
 
 import camera
 import cameraconfig
@@ -51,6 +52,11 @@ while True:
 
         if cam.config.do_stream:
             try:
+                # Make sure that the ip exists
+                p = ping(cam_config.stream_ip)
+                if (not p):
+                    raise (Exception)
+                # Connect to the image receiver
                 sender = imagezmq.ImageSender(
                     connect_to="tcp://" + str(cam_config.stream_ip) + ":" + str(cam_config.stream_port))
             except Exception:
@@ -87,12 +93,12 @@ while True:
     if cam.config.do_stream:
         # Send the gray_frame over camera stream
         try:
+            # Format image and send it
             send_frame = imutils.resize(color_frame, width=320, height=200)
             send_frame = cv2.cvtColor(send_frame, cv2.COLOR_RGB2BGR)
             sender.send_image(hostName, send_frame)
         except:
             network.send_status("Error: Could not send frame to camera server.")
-            initialize = True
             continue
 
     # End of profiling
