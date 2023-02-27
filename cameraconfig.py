@@ -22,3 +22,4 @@ class Config:
         self.do_stream = network.get_do_stream()
         self.stream_port = network.get_stream_port()
         self.stream_ip = network.get_stream_ip()
+        self.decision_margin = network.get_decision_margin()

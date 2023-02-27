@@ -116,5 +116,9 @@ def get_stream_ip():
     return config_table.getEntry("Stream Ip").getString("10.34.76.255")
 
 
+def get_decision_margin():
+    return config_table.getEntry("Decision Margin").getDouble(15)
+
+
 def flush():
     NetworkTables.getDefault().flush()

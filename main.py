@@ -1,6 +1,7 @@
 import socket
 import time
 
+import cv2
 import imagezmq
 import imutils
 
@@ -75,7 +76,7 @@ while True:
 
     for detection in detections:
 
-        if detection.hamming == 0 and detection.tag_id >= 1 and detection.tag_id <= 8 and detection.decision_margin > 1:
+        if detection.hamming == 0 and detection.tag_id >= 1 and detection.tag_id <= 8 and detection.decision_margin > cam_config.decision_margin:
             # Annotate and send the stream if set to true
             if cam.config.do_stream:
                 graphics.annotate(color_frame, detection)
@@ -86,7 +87,8 @@ while True:
     if cam.config.do_stream:
         # Send the gray_frame over camera stream
         try:
-            send_frame = imutils.resize(color_frame, width=640, height=400)
+            send_frame = imutils.resize(color_frame, width=320, height=200)
+            send_frame = cv2.cvtColor(send_frame, cv2.COLOR_RGB2BGR)
             sender.send_image(hostName, send_frame)
         except:
             network.send_status("Error: Could not send frame to camera server.")
