@@ -1,4 +1,10 @@
+import socket
 import time
+
+import cv2
+import imagezmq
+import imutils
+from ping3 import ping
 
 import camera
 import cameraconfig
@@ -8,6 +14,8 @@ import network
 initialize = True
 first_initialization = True
 first_cam_initialization = True
+
+hostName = socket.gethostname()
 
 # Main Control Loop
 while True:
@@ -35,11 +43,28 @@ while True:
         try:
             # Create a new camera
             cam = camera.Camera(cam_config)
+
         except Exception:
             # Try again if camera failed to initialize
             # Next run needs to be in first_initialization mode because it may try to terminate an inproperly initialized camera
             first_initialization = True
             continue
+
+        if cam.config.do_stream:
+            try:
+                # Make sure that the ip exists
+                p = ping(cam_config.stream_ip)
+                if (not p):
+                    raise (Exception)
+                # Connect to the image receiver
+                sender = imagezmq.ImageSender(
+                    connect_to="tcp://" + str(cam_config.stream_ip) + ":" + str(cam_config.stream_port))
+
+                encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), int(cam_config.encode_quality)]
+            except Exception:
+                network.send_status(
+                    "Can not connect to: " + "tcp://" + str(cam_config.stream_ip) + ":" + str(cam_config.stream_port))
+                continue
 
         initialize = False
 
@@ -50,7 +75,7 @@ while True:
 
     # Get detections
     try:
-        detections, gray_frame, timestamp, color_frame = cam.process_frame()
+        detections, timestamp, color_frame = cam.process_frame()
     except Exception:
         # Go back to the top of the loop if failed
         # Tries to reinitialize the camera if it could not find a frame
@@ -59,10 +84,10 @@ while True:
 
     for detection in detections:
 
-        if detection.hamming == 0 and detection.tag_id >= 1 and detection.tag_id <= 8 and detection.decision_margin > 1:
+        if detection.hamming == 0 and detection.tag_id >= 1 and detection.tag_id <= 8 and detection.decision_margin > cam_config.decision_margin:
             # Annotate and send the stream if set to true
             if cam.config.do_stream:
-                graphics.annotate(gray_frame, detection)
+                graphics.annotate(color_frame, detection)
 
             network.log_pos(detection.tag_id, detection.pose_t[0], detection.pose_t[1], detection.pose_t[2],
                             detection.pose_R, timestamp)
@@ -70,10 +95,14 @@ while True:
     if cam.config.do_stream:
         # Send the gray_frame over camera stream
         try:
-            print("")
+            # Format image and send it
+            send_frame = imutils.resize(color_frame, width=320, height=200)
+            send_frame = cv2.cvtColor(send_frame, cv2.COLOR_RGB2BGR)
+
+            result, encimage = cv2.imencode('.jpg', send_frame, encode_param)
+            sender.send_image(hostName, encimage)
         except:
             network.send_status("Error: Could not send frame to camera server.")
-            initialize = True
             continue
 
     # End of profiling
