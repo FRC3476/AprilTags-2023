@@ -59,6 +59,8 @@ while True:
                 # Connect to the image receiver
                 sender = imagezmq.ImageSender(
                     connect_to="tcp://" + str(cam_config.stream_ip) + ":" + str(cam_config.stream_port))
+
+                encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), int(cam_config.encode_quality)]
             except Exception:
                 network.send_status(
                     "Can not connect to: " + "tcp://" + str(cam_config.stream_ip) + ":" + str(cam_config.stream_port))
@@ -96,7 +98,9 @@ while True:
             # Format image and send it
             send_frame = imutils.resize(color_frame, width=320, height=200)
             send_frame = cv2.cvtColor(send_frame, cv2.COLOR_RGB2BGR)
-            sender.send_image(hostName, send_frame)
+
+            result, encimage = cv2.imencode('.jpg', send_frame, encode_param)
+            sender.send_image(hostName, encimage)
         except:
             network.send_status("Error: Could not send frame to camera server.")
             continue

@@ -120,5 +120,9 @@ def get_decision_margin():
     return config_table.getEntry("Decision Margin").getDouble(15)
 
 
+def get_encode_quality():
+    return config_table.getEntry("Encode Quality").getDouble(50)
+
+
 def flush():
     NetworkTables.getDefault().flush()
