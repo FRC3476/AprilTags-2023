@@ -3,7 +3,6 @@ import time
 
 import cv2
 import imagezmq
-import imutils
 from ping3 import ping
 
 import camera
@@ -96,7 +95,9 @@ while True:
         # Send the gray_frame over camera stream
         try:
             # Format image and send it
-            send_frame = imutils.resize(color_frame, width=320, height=200)
+            send_frame = cv2.resize(color_frame,
+                                    (int(cam_config.x_resolution * .25), int(cam_config.y_resolution * .25)),
+                                    cv2.INTER_LINEAR)
             send_frame = cv2.cvtColor(send_frame, cv2.COLOR_RGB2BGR)
 
             result, encimage = cv2.imencode('.jpg', send_frame, encode_param)
