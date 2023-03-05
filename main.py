@@ -83,7 +83,7 @@ while True:
                 continue
 
             if (len(userdirs) > 0):
-                drivename = "/media/" + str(dirs[0]) + str(userdirs[0])
+                drivename = "/media/" + str(dirs[0]) + "/" + str(userdirs[0]) + "/"
             else:
                 network.send_status("No flash drive plugged in to store video.")
                 continue
