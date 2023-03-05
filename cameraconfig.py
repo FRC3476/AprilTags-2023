@@ -24,3 +24,4 @@ class Config:
         self.stream_ip = network.get_stream_ip()
         self.decision_margin = network.get_decision_margin()
         self.encode_quality = network.get_encode_quality()
+        self.record_video = network.get_record_video()

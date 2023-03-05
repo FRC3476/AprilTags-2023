@@ -124,5 +124,9 @@ def get_encode_quality():
     return config_table.getEntry("Encode Quality").getDouble(50)
 
 
+def get_record_video():
+    return config_table.getEntry("Record Video").getBoolean(False)
+
+
 def flush():
     NetworkTables.getDefault().flush()

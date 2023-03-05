@@ -1,5 +1,6 @@
 import socket
 import time
+from datetime import datetime
 
 import cv2
 import imagezmq
@@ -12,7 +13,8 @@ import network
 
 initialize = True
 first_initialization = True
-first_cam_initialization = True
+first_cam_initialization =
+first_record = True
 
 hostName = socket.gethostname()
 
@@ -65,6 +67,14 @@ while True:
                     "Can not connect to: " + "tcp://" + str(cam_config.stream_ip) + ":" + str(cam_config.stream_port))
                 continue
 
+        if not first_record:
+            video_file.release()
+
+        if cam.config.record_video:
+            video_file = cv2.VideoWriter(str(datetime.now().strftime()) + ".avi", cv2.VideoWriter_fourcc(*"MJPG"), 10,
+                                         (int(cam_config.x_resolution * .25), int(cam_config.y_resolution * .25)))
+            first_record = False
+
         initialize = False
 
     # Check if camera settings changed
@@ -91,20 +101,24 @@ while True:
             network.log_pos(detection.tag_id, detection.pose_t[0], detection.pose_t[1], detection.pose_t[2],
                             detection.pose_R, timestamp)
 
+    if cam.config.do_stream or cam.config.record_video:
+        # Format image and send it
+        send_frame = cv2.resize(color_frame,
+                                (int(cam_config.x_resolution * .25), int(cam_config.y_resolution * .25)),
+                                cv2.INTER_LINEAR)
+        send_frame = cv2.cvtColor(send_frame, cv2.COLOR_RGB2BGR)
+
     if cam.config.do_stream:
         # Send the gray_frame over camera stream
         try:
-            # Format image and send it
-            send_frame = cv2.resize(color_frame,
-                                    (int(cam_config.x_resolution * .25), int(cam_config.y_resolution * .25)),
-                                    cv2.INTER_LINEAR)
-            send_frame = cv2.cvtColor(send_frame, cv2.COLOR_RGB2BGR)
-
             result, encimage = cv2.imencode('.jpg', send_frame, encode_param)
             sender.send_image(hostName, encimage)
         except:
             network.send_status("Error: Could not send frame to camera server.")
             continue
+
+    if cam.config.record_video:
+        result.write(send_frame)
 
     # End of profiling
     network.log_looptime(time.time() - start_time)
