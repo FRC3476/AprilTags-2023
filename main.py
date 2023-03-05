@@ -1,9 +1,9 @@
 import socket
 import time
+from datetime import datetime
 
 import cv2
 import imagezmq
-import imutils
 from ping3 import ping
 
 import camera
@@ -14,6 +14,7 @@ import network
 initialize = True
 first_initialization = True
 first_cam_initialization = True
+first_record = True
 
 hostName = socket.gethostname()
 
@@ -66,6 +67,18 @@ while True:
                     "Can not connect to: " + "tcp://" + str(cam_config.stream_ip) + ":" + str(cam_config.stream_port))
                 continue
 
+        if not first_record:
+            video_file.release()
+
+        if cam.config.record_video:
+            hourminutesecond = str(datetime.now().strftime("%H%M%S"))
+            video_file = cv2.VideoWriter(
+                "/var/www/AprilTags/video/" + hourminutesecond + ".avi",
+                cv2.VideoWriter_fourcc(*"MJPG"), 10,
+                (cam_config.x_resolution, cam_config.y_resolution))
+            network.send_status("Recording Video As: " + str(datetime.now().strftime("%H%M%S") + ".avi"))
+            first_record = False
+
         initialize = False
 
     # Check if camera settings changed
@@ -86,17 +99,26 @@ while True:
 
         if detection.hamming == 0 and detection.tag_id >= 1 and detection.tag_id <= 8 and detection.decision_margin > cam_config.decision_margin:
             # Annotate and send the stream if set to true
-            if cam.config.do_stream:
+            if cam.config.do_stream or cam.config.record_video:
                 graphics.annotate(color_frame, detection)
 
             network.log_pos(detection.tag_id, detection.pose_t[0], detection.pose_t[1], detection.pose_t[2],
                             detection.pose_R, timestamp)
 
+    if cam.config.do_stream or cam.config.record_video:
+        # Format image and send it
+        send_frame = cv2.resize(color_frame,
+                                (int(cam_config.x_resolution * .25), int(cam_config.y_resolution * .25)),
+                                cv2.INTER_LINEAR)
+        send_frame = cv2.cvtColor(send_frame, cv2.COLOR_RGB2BGR)
+
     if cam.config.do_stream:
         # Send the gray_frame over camera stream
         try:
             # Format image and send it
-            send_frame = imutils.resize(color_frame, width=320, height=200)
+            send_frame = cv2.resize(color_frame,
+                                    (int(cam_config.x_resolution * .25), int(cam_config.y_resolution * .25)),
+                                    cv2.INTER_LINEAR)
             send_frame = cv2.cvtColor(send_frame, cv2.COLOR_RGB2BGR)
 
             result, encimage = cv2.imencode('.jpg', send_frame, encode_param)
@@ -104,6 +126,10 @@ while True:
         except:
             network.send_status("Error: Could not send frame to camera server.")
             continue
+
+    if cam.config.record_video:
+        record_frame = cv2.cvtColor(color_frame, cv2.COLOR_RGB2BGR)
+        video_file.write(record_frame)
 
     # End of profiling
     network.log_looptime(time.time() - start_time)
