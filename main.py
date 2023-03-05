@@ -13,7 +13,7 @@ import network
 
 initialize = True
 first_initialization = True
-first_cam_initialization =
+first_cam_initialization = True
 first_record = True
 
 hostName = socket.gethostname()
@@ -71,7 +71,8 @@ while True:
             video_file.release()
 
         if cam.config.record_video:
-            video_file = cv2.VideoWriter(str(datetime.now().strftime()) + ".avi", cv2.VideoWriter_fourcc(*"MJPG"), 10,
+            video_file = cv2.VideoWriter("/var/www/AprilTags/video/" + str(datetime.now().strftime()) + ".avi",
+                                         cv2.VideoWriter_fourcc(*"MJPG"), 10,
                                          (int(cam_config.x_resolution * .25), int(cam_config.y_resolution * .25)))
             first_record = False
 
