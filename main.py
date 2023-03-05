@@ -89,10 +89,10 @@ while True:
                 continue
 
             hourminutesecond = str(datetime.now().strftime("%H%M%S"))
-            video_file = cv2.VideoWriter(str(dir) + drivename + hourminutesecond + ".avi",
-                                         cv2.VideoWriter_fourcc(*"MJPG"), cam_config.framerate,
+            video_file = cv2.VideoWriter(str(dir) + drivename + hourminutesecond + ".mp4",
+                                         cv2.VideoWriter_fourcc(*"h264"), cam_config.framerate,
                                          (cam_config.x_resolution, cam_config.y_resolution))
-            network.send_status("Recording Video As: " + str(datetime.now().strftime("%H%M%S") + ".avi"))
+            network.send_status("Recording Video As: " + str(datetime.now().strftime("%H%M%S") + ".mp4"))
             first_record = False
 
         initialize = False
