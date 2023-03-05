@@ -1,3 +1,4 @@
+import os
 import socket
 import time
 from datetime import datetime
@@ -71,9 +72,25 @@ while True:
             video_file.release()
 
         if cam.config.record_video:
+            # Check for user directory in media
+            dir, dirnames, filenames = os.walk("/media")
+
+            if (len(dirnames) > 0):
+                # Check for drive plugged in
+                dir, dirnames, filesnames = os.walk("/media/" + str(dirnames[0]))
+            else:
+                network.send_status("No user directory found for saving video to flash drive.")
+                continue
+
+            if (len(dirnames) > 0):
+                drivename = str(dirnames)
+            else:
+                network.send_status("No flash drive plugged in to store video.")
+                continue
+
             hourminutesecond = str(datetime.now().strftime("%H%M%S"))
             video_file = cv2.VideoWriter(
-                "/var/www/AprilTags/video/" + hourminutesecond + ".avi",
+                "/media/codeorange/" + drivename + hourminutesecond + ".avi",
                 cv2.VideoWriter_fourcc(*"MJPG"), cam_config.framerate,
                 (cam_config.x_resolution, cam_config.y_resolution))
             network.send_status("Recording Video As: " + str(datetime.now().strftime("%H%M%S") + ".avi"))
