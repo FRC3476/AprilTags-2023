@@ -73,17 +73,17 @@ while True:
 
         if cam.config.record_video:
             # Check for user directory in media
-            dir, dirnames, filenames = os.walk("/media")
+            dirs = os.listdir("/media")
 
-            if (len(dirnames) > 0):
+            if (len(dirs) > 0):
                 # Check for drive plugged in
-                dir, dirnames, filesnames = os.walk("/media/" + str(dirnames[0]))
+                userdirs = str(dirs[0])
             else:
                 network.send_status("No user directory found for saving video to flash drive.")
                 continue
 
-            if (len(dirnames) > 0):
-                drivename = str(dirnames)
+            if (len(userdirs) > 0):
+                drivename = "/media/" + str(dirs[0]) + str(userdirs[0])
             else:
                 network.send_status("No flash drive plugged in to store video.")
                 continue
