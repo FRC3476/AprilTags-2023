@@ -77,7 +77,7 @@ while True:
 
             if (len(dirs) > 0):
                 # Check for drive plugged in
-                userdirs = str(dirs[0])
+                userdirs = os.listdir("/media/" + str(dirs[0]))
             else:
                 network.send_status("No user directory found for saving video to flash drive.")
                 continue
@@ -89,7 +89,7 @@ while True:
                 continue
 
             hourminutesecond = str(datetime.now().strftime("%H%M%S"))
-            video_file = cv2.VideoWriter(str(dir) + drivename + hourminutesecond + ".mp4",
+            video_file = cv2.VideoWriter(drivename + hourminutesecond + ".mp4",
                                          cv2.VideoWriter_fourcc(*"h264"), cam_config.framerate,
                                          (cam_config.x_resolution, cam_config.y_resolution))
             network.send_status("Recording Video As: " + str(datetime.now().strftime("%H%M%S") + ".mp4"))
