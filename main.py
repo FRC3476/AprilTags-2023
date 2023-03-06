@@ -89,10 +89,10 @@ while True:
                 continue
 
             hourminutesecond = str(datetime.now().strftime("%H%M%S"))
-            video_file = cv2.VideoWriter(drivename + hourminutesecond + ".mp4",
+            video_file = cv2.VideoWriter(drivename + hourminutesecond + ".mkv",
                                          cv2.VideoWriter_fourcc(*"mp4v"), cam_config.framerate,
                                          (cam_config.x_resolution, cam_config.y_resolution))
-            network.send_status("Recording Video As: " + str(datetime.now().strftime("%H%M%S") + ".mp4"))
+            network.send_status("Recording Video As: " + str(datetime.now().strftime("%H%M%S") + ".mkv"))
             first_record = False
 
         initialize = False
@@ -121,14 +121,13 @@ while True:
             network.log_pos(detection.tag_id, detection.pose_t[0], detection.pose_t[1], detection.pose_t[2],
                             detection.pose_R, timestamp)
 
-    if cam.config.do_stream or cam.config.record_video:
+    if cam.config.do_stream:
         # Format image and send it
         send_frame = cv2.resize(color_frame,
                                 (int(cam_config.x_resolution * .25), int(cam_config.y_resolution * .25)),
                                 cv2.INTER_LINEAR)
         send_frame = cv2.cvtColor(send_frame, cv2.COLOR_RGB2BGR)
 
-    if cam.config.do_stream:
         # Send the gray_frame over camera stream
         try:
             # Format image and send it
