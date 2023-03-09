@@ -1,6 +1,6 @@
 import cv2
 
-light_blue = (255, 120, 60)
+light_blue = (60, 120, 255)
 white = (255, 255, 255)
 width_px = 4
 

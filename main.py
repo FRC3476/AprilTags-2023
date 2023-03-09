@@ -1,3 +1,4 @@
+import os
 import socket
 import time
 from datetime import datetime
@@ -71,12 +72,27 @@ while True:
             video_file.release()
 
         if cam.config.record_video:
+            # Check for user directory in media
+            dirs = os.listdir("/media")
+
+            if (len(dirs) > 0):
+                # Check for drive plugged in
+                userdirs = os.listdir("/media/" + str(dirs[0]))
+            else:
+                network.send_status("No user directory found for saving video to flash drive.")
+                continue
+
+            if (len(userdirs) > 0):
+                drivename = "/media/" + str(dirs[0]) + "/" + str(userdirs[0]) + "/"
+            else:
+                network.send_status("No flash drive plugged in to store video.")
+                continue
+
             hourminutesecond = str(datetime.now().strftime("%H%M%S"))
-            video_file = cv2.VideoWriter(
-                "/var/www/AprilTags/video/" + hourminutesecond + ".avi",
-                cv2.VideoWriter_fourcc(*"MJPG"), cam_config.framerate,
-                (cam_config.x_resolution, cam_config.y_resolution))
-            network.send_status("Recording Video As: " + str(datetime.now().strftime("%H%M%S") + ".avi"))
+            video_file = cv2.VideoWriter(drivename + hourminutesecond + ".mkv",
+                                         cv2.VideoWriter_fourcc(*"mp4v"), cam_config.framerate,
+                                         (cam_config.x_resolution, cam_config.y_resolution))
+            network.send_status("Recording Video As: " + str(datetime.now().strftime("%H%M%S") + ".mkv"))
             first_record = False
 
         initialize = False
@@ -105,14 +121,13 @@ while True:
             network.log_pos(detection.tag_id, detection.pose_t[0], detection.pose_t[1], detection.pose_t[2],
                             detection.pose_R, timestamp)
 
-    if cam.config.do_stream or cam.config.record_video:
+    if cam.config.do_stream:
         # Format image and send it
         send_frame = cv2.resize(color_frame,
                                 (int(cam_config.x_resolution * .25), int(cam_config.y_resolution * .25)),
                                 cv2.INTER_LINEAR)
         send_frame = cv2.cvtColor(send_frame, cv2.COLOR_RGB2BGR)
 
-    if cam.config.do_stream:
         # Send the gray_frame over camera stream
         try:
             # Format image and send it
