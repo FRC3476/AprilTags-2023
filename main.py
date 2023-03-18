@@ -4,8 +4,8 @@ import time
 from datetime import datetime
 
 import cv2
-import imagezmq
-from ping3 import ping
+import ffmpeg_streaming
+from ffmpeg_streaming import Formats
 
 import camera
 import cameraconfig
@@ -54,18 +54,12 @@ while True:
 
         if cam.config.do_stream:
             try:
-                # Make sure that the ip exists
-                p = ping(cam_config.stream_ip)
-                if (not p):
-                    raise (Exception)
-                # Connect to the image receiver
-                sender = imagezmq.ImageSender(
-                    connect_to="tcp://" + str(cam_config.stream_ip) + ":" + str(cam_config.stream_port))
-
-                encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), int(cam_config.encode_quality)]
-            except Exception:
-                network.send_status(
-                    "Can not connect to: " + "tcp://" + str(cam_config.stream_ip) + ":" + str(cam_config.stream_port))
+                capture = ffmpeg_streaming.input("device", capture=True)
+                dash = capture.dash(Formats.h264())
+                dash.auto_generate_representations()
+                dash.output("/var/www/AprilTags/stream/dash.mpd")
+            except (Exception):
+                network.send_status("Could not enable stream.")
                 continue
 
         if not first_record:
@@ -120,27 +114,6 @@ while True:
 
             network.log_pos(detection.tag_id, detection.pose_t[0], detection.pose_t[1], detection.pose_t[2],
                             detection.pose_R, timestamp)
-
-    if cam.config.do_stream:
-        # Format image and send it
-        send_frame = cv2.resize(color_frame,
-                                (int(cam_config.x_resolution * .25), int(cam_config.y_resolution * .25)),
-                                cv2.INTER_LINEAR)
-        send_frame = cv2.cvtColor(send_frame, cv2.COLOR_RGB2BGR)
-
-        # Send the gray_frame over camera stream
-        try:
-            # Format image and send it
-            send_frame = cv2.resize(color_frame,
-                                    (int(cam_config.x_resolution * .25), int(cam_config.y_resolution * .25)),
-                                    cv2.INTER_LINEAR)
-            send_frame = cv2.cvtColor(send_frame, cv2.COLOR_RGB2BGR)
-
-            result, encimage = cv2.imencode('.jpg', send_frame, encode_param)
-            sender.send_image(hostName, encimage)
-        except:
-            network.send_status("Error: Could not send frame to camera server.")
-            continue
 
     if cam.config.record_video:
         record_frame = cv2.cvtColor(color_frame, cv2.COLOR_RGB2BGR)
