@@ -1,11 +1,10 @@
 import os
 import socket
+import subprocess
 import time
 from datetime import datetime
 
 import cv2
-import ffmpeg_streaming
-from ffmpeg_streaming import Formats
 
 import camera
 import cameraconfig
@@ -18,6 +17,8 @@ first_cam_initialization = True
 first_record = True
 
 hostName = socket.gethostname()
+
+rtmp_url = "rtmp://127.0.0.1:1935/stream/pupils_trace"
 
 # Main Control Loop
 while True:
@@ -53,14 +54,20 @@ while True:
             continue
 
         if cam.config.do_stream:
-            try:
-                capture = ffmpeg_streaming.input("device", capture=True)
-                dash = capture.dash(Formats.h264())
-                dash.auto_generate_representations()
-                dash.output("/var/www/AprilTags/stream/dash.mpd")
-            except (Exception):
-                network.send_status("Could not enable stream.")
-                continue
+            command = ['ffmpeg',
+                       '-y',
+                       '-f', 'rawvideo',
+                       '-vcodec', 'rawvideo',
+                       '-pix_fmt', 'bgr24',
+                       '-s', "{}x{}".format(cam_config.x_resolution, cam_config.y_resolution),
+                       '-r', str(cam_config.framerate),
+                       '-i', '-',
+                       '-c:v', 'libx264',
+                       '-pix_fmt', 'yuv420p',
+                       '-preset', 'ultrafast',
+                       '-f', 'flv',
+                       rtmp_url]
+            p = subprocess.Popen(command, stdin=subprocess.PIPE)
 
         if not first_record:
             video_file.release()
@@ -118,6 +125,9 @@ while True:
     if cam.config.record_video:
         record_frame = cv2.cvtColor(color_frame, cv2.COLOR_RGB2BGR)
         video_file.write(record_frame)
+
+    if cam_config.do_stream:
+        p.stdin.write(color_frame.tobytes())
 
     # End of profiling
     network.log_looptime(time.time() - start_time)
