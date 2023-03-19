@@ -66,6 +66,7 @@ while True:
                        '-pix_fmt', 'yuv420p',
                        '-preset', 'ultrafast',
                        '-f', 'flv',
+                       '-listen', '1',
                        rtmp_url]
             p = subprocess.Popen(command, stdin=subprocess.PIPE)
 
