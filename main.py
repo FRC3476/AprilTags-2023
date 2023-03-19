@@ -18,7 +18,7 @@ first_record = True
 
 hostName = socket.gethostname()
 
-rtmp_url = "rtmp://127.0.0.1:1935/stream/pupils_trace"
+rtmp_url = "rtmp://localhost/live/stream"
 
 # Main Control Loop
 while True:
@@ -60,12 +60,11 @@ while True:
                        '-vcodec', 'rawvideo',
                        '-pix_fmt', 'bgr24',
                        '-s', "{}x{}".format(cam_config.x_resolution, cam_config.y_resolution),
-                       '-r', str(cam_config.framerate),
-                       '-i', '-',
-                       '-c:v', 'libx264',
-                       '-pix_fmt', 'yuv420p',
-                       '-preset', 'ultrafast',
+                       '-r', str(40),
+                       '-i', '-'] + "-c:v libx264 -preset fast -b:v 2M -bufsize 70000 -profile:v high -g 999999 -x264opts no-sliced-threads:nal-hrd=cbr -tune zerolatency -threads 1` -vsync 0".split(' ') + ['-pix_fmt', 'yuv420p',
+                       '-s', "{}x{}".format(int(cam_config.x_resolution), int(cam_config.y_resolution)),
                        '-f', 'flv',
+                       '-fflags', 'nobuffer',
                        '-listen', '1',
                        rtmp_url]
             p = subprocess.Popen(command, stdin=subprocess.PIPE)
