@@ -61,7 +61,7 @@ while True:
                        '-pix_fmt', 'bgr24',
                        '-s', "{}x{}".format(cam_config.x_resolution, cam_config.y_resolution),
                        '-r', str(40),
-                       '-i', '-'] + "-c:v libx264 -preset fast -b:v 2M -bufsize 70000 -profile:v high -g 999999 -x264opts no-sliced-threads:nal-hrd=cbr -tune zerolatency -threads 1` -vsync 0".split(' ') + ['-pix_fmt', 'yuv420p',
+                       '-i', '-'] + "-c:v libx264 -preset fast -b:v 2M -bufsize 70000 -profile:v high -g 999999 -x264opts no-sliced-threads:nal-hrd=cbr -tune zerolatency -threads 1 -vsync 0 -flags2 fast -x264opts keyint=15".split(' ') + ['-pix_fmt', 'yuv420p',
                        '-s', "{}x{}".format(int(cam_config.x_resolution), int(cam_config.y_resolution)),
                        '-f', 'flv',
                        '-fflags', 'nobuffer',
