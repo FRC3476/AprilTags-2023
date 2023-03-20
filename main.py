@@ -1,11 +1,9 @@
 import os
-import socket
+import subprocess
 import time
 from datetime import datetime
 
 import cv2
-import imagezmq
-from ping3 import ping
 
 import camera
 import cameraconfig
@@ -17,7 +15,10 @@ first_initialization = True
 first_cam_initialization = True
 first_record = True
 
-hostName = socket.gethostname()
+f = open("/var/www/AprilTags/ip.txt")
+ip = f.read()
+
+rtmp_url = "rtmp://" + str(ip[0:12]) + "/live/stream"
 
 # Main Control Loop
 while True:
@@ -52,21 +53,26 @@ while True:
             first_initialization = True
             continue
 
-        if cam.config.do_stream:
-            try:
-                # Make sure that the ip exists
-                p = ping(cam_config.stream_ip)
-                if (not p):
-                    raise (Exception)
-                # Connect to the image receiver
-                sender = imagezmq.ImageSender(
-                    connect_to="tcp://" + str(cam_config.stream_ip) + ":" + str(cam_config.stream_port))
+        if cam_config.do_stream:
+            command = ['ffmpeg',
+                       '-y',
+                       '-f', 'rawvideo',
+                       '-vcodec', 'rawvideo',
+                       '-pix_fmt', 'rgb24',
+                       '-s', "{}x{}".format(cam_config.x_resolution, cam_config.y_resolution),
+                       '-r', str(40),
+                       '-i',
+                       '-'] + "-c:v libx264 -preset fast -b:v 1M -bufsize 70000 -profile:v high -g 999999 -x264opts no-sliced-threads:nal-hrd=cbr -tune zerolatency -threads 1 -vsync 0 -flags2 fast -x264opts keyint=15".split(
+                ' ') + ['-pix_fmt', 'yuv420p',
+                        '-s', "{}x{}".format(int(cam_config.x_resolution), int(cam_config.y_resolution)),
+                        '-f', 'flv',
+                        '-fflags', 'nobuffer',
+                        '-listen', '1',
+                        rtmp_url]
 
-                encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), int(cam_config.encode_quality)]
-            except Exception:
-                network.send_status(
-                    "Can not connect to: " + "tcp://" + str(cam_config.stream_ip) + ":" + str(cam_config.stream_port))
-                continue
+            # Runs this ffmpeg script in a subprocess
+            p = subprocess.Popen(command, stdin=subprocess.PIPE)
+            first_stream = False
 
         if not first_record:
             video_file.release()
@@ -121,30 +127,17 @@ while True:
             network.log_pos(detection.tag_id, detection.pose_t[0], detection.pose_t[1], detection.pose_t[2],
                             detection.pose_R, timestamp)
 
-    if cam.config.do_stream:
-        # Format image and send it
-        send_frame = cv2.resize(color_frame,
-                                (int(cam_config.x_resolution * .25), int(cam_config.y_resolution * .25)),
-                                cv2.INTER_LINEAR)
-        send_frame = cv2.cvtColor(send_frame, cv2.COLOR_RGB2BGR)
-
-        # Send the gray_frame over camera stream
-        try:
-            # Format image and send it
-            send_frame = cv2.resize(color_frame,
-                                    (int(cam_config.x_resolution * .25), int(cam_config.y_resolution * .25)),
-                                    cv2.INTER_LINEAR)
-            send_frame = cv2.cvtColor(send_frame, cv2.COLOR_RGB2BGR)
-
-            result, encimage = cv2.imencode('.jpg', send_frame, encode_param)
-            sender.send_image(hostName, encimage)
-        except:
-            network.send_status("Error: Could not send frame to camera server.")
-            continue
-
     if cam.config.record_video:
+        # Writes frame to video file
         record_frame = cv2.cvtColor(color_frame, cv2.COLOR_RGB2BGR)
         video_file.write(record_frame)
+
+    if cam_config.do_stream:
+        # Writes frame to ffmpeg stream
+        try:
+            p.stdin.write(color_frame.tobytes())
+        except (Exception):
+            network.send_status("WARNING: Could not send frame to stream.")
 
     # End of profiling
     network.log_looptime(time.time() - start_time)
