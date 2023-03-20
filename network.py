@@ -108,20 +108,8 @@ def get_do_stream():
     return config_table.getEntry("Do Stream").getBoolean(False)
 
 
-def get_stream_port():
-    return config_table.getEntry("Stream Port").getDouble(5810)
-
-
-def get_stream_ip():
-    return config_table.getEntry("Stream Ip").getString("10.34.76.225")
-
-
 def get_decision_margin():
     return config_table.getEntry("Decision Margin").getDouble(15)
-
-
-def get_encode_quality():
-    return config_table.getEntry("Encode Quality").getDouble(50)
 
 
 def get_record_video():

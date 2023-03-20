@@ -15,9 +15,10 @@ initialize = True
 first_initialization = True
 first_cam_initialization = True
 first_record = True
+first_stream = True
 
-hostName = socket.getip
-ip = socket.gethostbyname(hostName)
+hostName = socket.gethostname()
+ip = socket.gethostbyname(str(hostName) + ".local")
 
 rtmp_url = "rtmp://" + str(ip) + "/live/stream"
 
@@ -54,7 +55,7 @@ while True:
             first_initialization = True
             continue
 
-        if cam.config.do_stream:
+        if cam_config.do_stream and first_stream:
             command = ['ffmpeg',
                        '-y',
                        '-f', 'rawvideo',
@@ -70,7 +71,10 @@ while True:
                         '-fflags', 'nobuffer',
                         '-listen', '1',
                         rtmp_url]
+
+            # Runs this ffmpeg script in a subprocess
             p = subprocess.Popen(command, stdin=subprocess.PIPE)
+            first_stream = False
 
         if not first_record:
             video_file.release()
@@ -126,10 +130,12 @@ while True:
                             detection.pose_R, timestamp)
 
     if cam.config.record_video:
+        # Writes frame to video file
         record_frame = cv2.cvtColor(color_frame, cv2.COLOR_RGB2BGR)
         video_file.write(record_frame)
 
     if cam_config.do_stream:
+        # Writes frame to ffmpeg stream
         p.stdin.write(color_frame.tobytes())
 
     # End of profiling
