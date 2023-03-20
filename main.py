@@ -1,5 +1,4 @@
 import os
-import socket
 import subprocess
 import time
 from datetime import datetime
@@ -15,12 +14,11 @@ initialize = True
 first_initialization = True
 first_cam_initialization = True
 first_record = True
-first_stream = True
 
-hostName = socket.gethostname()
-ip = socket.gethostbyname(str(hostName) + ".local")
+f = open("/var/www/AprilTags/ip.txt")
+ip = f.read()
 
-rtmp_url = "rtmp://" + str(ip) + "/live/stream"
+rtmp_url = "rtmp://" + str(ip[0:12]) + "/live/stream"
 
 # Main Control Loop
 while True:
@@ -55,7 +53,7 @@ while True:
             first_initialization = True
             continue
 
-        if cam_config.do_stream and first_stream:
+        if cam_config.do_stream:
             command = ['ffmpeg',
                        '-y',
                        '-f', 'rawvideo',
@@ -64,7 +62,7 @@ while True:
                        '-s', "{}x{}".format(cam_config.x_resolution, cam_config.y_resolution),
                        '-r', str(40),
                        '-i',
-                       '-'] + "-c:v libx264 -preset fast -b:v 2M -bufsize 70000 -profile:v high -g 999999 -x264opts no-sliced-threads:nal-hrd=cbr -tune zerolatency -threads 1 -vsync 0 -flags2 fast -x264opts keyint=15".split(
+                       '-'] + "-c:v libx264 -preset fast -b:v 1M -bufsize 70000 -profile:v high -g 999999 -x264opts no-sliced-threads:nal-hrd=cbr -tune zerolatency -threads 1 -vsync 0 -flags2 fast -x264opts keyint=15".split(
                 ' ') + ['-pix_fmt', 'yuv420p',
                         '-s', "{}x{}".format(int(cam_config.x_resolution), int(cam_config.y_resolution)),
                         '-f', 'flv',
@@ -136,7 +134,10 @@ while True:
 
     if cam_config.do_stream:
         # Writes frame to ffmpeg stream
-        p.stdin.write(color_frame.tobytes())
+        try:
+            p.stdin.write(color_frame.tobytes())
+        except (Exception):
+            network.send_status("WARNING: Could not send frame to stream.")
 
     # End of profiling
     network.log_looptime(time.time() - start_time)
