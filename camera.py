@@ -1,4 +1,5 @@
 import time
+import traceback
 
 import cv2
 import numpy as np
@@ -26,7 +27,7 @@ class Camera:
                                   rs.format.rgb8, int(self.config.framerate))
                 profile = self.pipeline.start(cfg)
             except Exception:
-                network.send_status("Error: Could not enable depth camera stream.")
+                network.send_status("Error: Could not enable depth camera stream. " + str(traceback.format_exc()))
                 raise Exception("Error: Could not enable depth camera stream.")
 
             # Set realsense exposure
@@ -34,14 +35,16 @@ class Camera:
                 s = profile.get_device().query_sensors()[1]
                 s.set_option(rs.option.exposure, self.config.exposure)
             except Exception:
-                network.send_status("Error: Invalid exposure: " + str(self.config.exposure))
+                network.send_status(
+                    "Error: Invalid exposure: " + str(self.config.exposure) + " " + str(traceback.format_exc()))
                 raise Exception("Error: Invalid exposure: " + str(self.config.exposure))
 
             # Gets camera intrinsics
             try:
                 intr = profile.get_stream(rs.stream.color).as_video_stream_profile().get_intrinsics()
+
             except Exception:
-                network.send_status("Error: Could not find depth camera intrinsics.")
+                network.send_status("Error: Could not find depth camera intrinsics. " + str(traceback.format_exc()))
                 raise Exception("Error: Could not find depth camera intrinsics.")
 
             self.fx = intr.fx
@@ -54,31 +57,35 @@ class Camera:
             try:
                 self.camera = cv2.VideoCapture(self.config.port)
             except Exception:
-                network.send_status("Error: Invalid port: " + str(self.config.port))
+                network.send_status("Error: Invalid port: " + str(self.config.port) + " " + str(traceback.format_exc()))
                 raise Exception("Error: Invalid port: " + str(self.config.port))
 
             try:
                 self.camera.set(cv2.CAP_PROP_EXPOSURE, self.config.exposure)
             except Exception:
-                network.send_status("Error: Invalid exposure: " + str(self.config.exposure))
+                network.send_status(
+                    "Error: Invalid exposure: " + str(self.config.exposure) + " " + str(traceback.format_exc()))
                 raise Exception("Error: Invalid exposure: " + str(self.config.exposure))
 
             try:
                 self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, self.config.x_resolution)
             except Exception:
-                network.send_status("Error: Invalid X Resolution: " + str(self.config.x_resolution))
+                network.send_status(
+                    "Error: Invalid X Resolution: " + str(self.config.x_resolution) + " " + str(traceback.format_exc()))
                 raise Exception("Error: Invalid X Resolution: " + str(self.config.x_resolution))
 
             try:
                 self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, self.config.y_resolution)
             except Exception:
-                network.send_status("Error: Invalid Y Resolution: " + str(self.config.y_resolution))
+                network.send_status(
+                    "Error: Invalid Y Resolution: " + str(self.config.y_resolution) + " " + str(traceback.format_exc()))
                 raise Exception("Error: Invalid Y Resolution: " + str(self.config.y_resolution))
 
             try:
                 self.camera.set(cv2.CAP_PROP_FPS, self.config.framerate)
             except Exception:
-                network.send_status("Error: Invalid framerate: " + str(self.config.framerate))
+                network.send_status(
+                    "Error: Invalid framerate: " + str(self.config.framerate) + " " + str(traceback.format_exc()))
                 raise Exception("Error: Invalid framerate: " + str(self.config.framerate))
 
             # Camera intrinsics
@@ -88,13 +95,15 @@ class Camera:
             self.cy = self.config.cy
         else:
             # Not 0 or 1
-            network.send_status("Error: Invalid camera type: " + str(self.config.cam_type))
+            network.send_status(
+                "Error: Invalid camera type: " + str(self.config.cam_type) + " " + str(traceback.format_exc()))
             raise Exception("Error: Invalid camera type: " + str(self.config.cam_type))
 
         try:
             self.tag_detector = Detector(families=constants.TAG_FAMILY, nthreads=self.config.threads)
         except Exception:
-            network.send_status("Error: Invalid number of threads: " + str(self.config.threads))
+            network.send_status(
+                "Error: Invalid number of threads: " + str(self.config.threads) + " " + str(traceback.format_exc()))
             raise Exception("Error: Invalid number of threads: " + str(self.config.threads))
 
     # Returns detections along with timestamp
@@ -145,7 +154,9 @@ class Camera:
             elif self.config.cam_type == 1:
                 self.camera.terminate()
             else:
-                network.send_status("Error: Tried to terminate invalid camera type:  " + str(self.config.cam_type))
+                network.send_satus(
+                    "Error: Tried to terminate invalid camera type:  " + str(self.config.cam_type) + " " + str(
+                        traceback.format_exc()))
         except Exception:
-            network.send_status("Error: Failed to terminate camera.")
+            network.send_status("Error: Failed to terminate camera." + str(traceback.format_exc()))
             raise Exception("Error: Failed to terminate camera.")

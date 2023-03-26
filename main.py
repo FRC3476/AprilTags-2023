@@ -1,6 +1,7 @@
 import os
 import subprocess
 import time
+import traceback
 from datetime import datetime
 
 import cv2
@@ -112,6 +113,7 @@ while True:
     try:
         detections, timestamp, color_frame = cam.process_frame()
     except Exception:
+        network.send_status("Error when processing frames. " + str(traceback.format_exc()))
         # Go back to the top of the loop if failed
         # Tries to reinitialize the camera if it could not find a frame
         initialize = True
@@ -137,7 +139,7 @@ while True:
         try:
             p.stdin.write(color_frame.tobytes())
         except (Exception):
-            network.send_status("WARNING: Could not send frame to stream.")
+            network.send_status("WARNING: Could not send frame to stream. " + str(traceback.format_exc()))
 
     # End of profiling
     network.log_looptime(time.time() - start_time)
