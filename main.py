@@ -62,14 +62,13 @@ while True:
                        '-pix_fmt', 'rgb24',
                        '-s', "{}x{}".format(cam_config.x_resolution, cam_config.y_resolution),
                        '-r', str(40),
-                       '-i'
-                       '-'] + "-c:v h264_qsv -b:v 2M".split(
-                ' ') + ['-pix_fmt', 'yuv420p',
-                        '-s', "{}x{}".format(int(cam_config.x_resolution), int(cam_config.y_resolution)),
-                        '-f', 'flv',
-                        '-fflags', 'nobuffer',
-                        '-listen', '1',
-                        rtmp_url]
+                       '-i',
+                       '-', "-c:v", 'h264_qsv', '-bitrate_limit', '2M', '-preset', 'veryfast',
+                       '-scenario', '4', '-low_power', 'false',
+                       '-f', 'flv',
+                       '-fflags', 'nobuffer',
+                       '-listen', '1',
+                       rtmp_url]
 
             # Runs this ffmpeg script in a subprocess
             p = subprocess.Popen(command, stdin=subprocess.PIPE)
