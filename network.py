@@ -116,5 +116,9 @@ def get_record_video():
     return config_table.getEntry("Record Video").getBoolean(False)
 
 
+def force_disable_recording():
+    config_table.getEntry("Record Video").setBoolean(False)
+
+
 def flush():
     NetworkTables.getDefault().flush()

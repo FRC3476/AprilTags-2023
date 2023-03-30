@@ -87,12 +87,14 @@ while True:
                 userdirs = os.listdir("/media/" + str(dirs[0]))
             else:
                 network.send_status("No user directory found for saving video to flash drive.")
+                network.force_disable_recording()
                 continue
 
             if (len(userdirs) > 0):
                 drivename = "/media/" + str(dirs[0]) + "/" + str(userdirs[0]) + "/"
             else:
                 network.send_status("No flash drive plugged in to store video.")
+                network.force_disable_recording()
                 continue
 
             hourminutesecond = str(datetime.now().strftime("%H%M%S"))
