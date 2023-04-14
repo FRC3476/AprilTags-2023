@@ -1,7 +1,9 @@
 import cv2
+import pyrealsense2 as rs
 
 light_blue = (60, 120, 255)
 white = (255, 255, 255)
+yellow = (0, 255, 255)
 width_px = 4
 
 
@@ -20,3 +22,11 @@ def annotate(frame, detection):
 
     cv2.putText(frame, "ID: " + str(detection.tag_id), (int(corners[1][0] + 10), int(corners[1][1])),
                 cv2.FONT_HERSHEY_SIMPLEX, 1, white)
+
+def draw_lines(frame, intrinsics, lines):
+    for i in range(0, len(lines), 6):
+        p1 = rs.rs2_project_point_to_pixel(intrinsics, [lines[i], lines[i + 1], lines[i + 2]])
+        p2 = rs.rs2_project_point_to_pixel(intrinsics, [lines[i + 3], lines[i + 4], lines[i + 5]])
+
+        cv2.line(frame, (int(p1[0]), int(p1[1])), (int(p2[0]), int(p2[1])), yellow, width_px)
+

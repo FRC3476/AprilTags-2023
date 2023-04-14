@@ -127,6 +127,7 @@ while True:
             # Annotate and send the stream if set to true
             if cam.config.do_stream or cam.config.record_video:
                 graphics.annotate(color_frame, detection)
+                graphics.draw_lines(color_frame, cam.intr, network.get_lines())
 
             network.log_pos(detection.tag_id, detection.pose_t[0], detection.pose_t[1], detection.pose_t[2],
                             detection.pose_R, timestamp)
