@@ -122,3 +122,6 @@ def force_disable_recording():
 
 def flush():
     NetworkTables.getDefault().flush()
+
+def get_lines():
+    return config_table.getEntry("Lines").getDoubleArray([])

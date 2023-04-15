@@ -42,6 +42,7 @@ class Camera:
             # Gets camera intrinsics
             try:
                 intr = profile.get_stream(rs.stream.color).as_video_stream_profile().get_intrinsics()
+                self.intr = intr
 
             except Exception:
                 network.send_status("Error: Could not find depth camera intrinsics. " + str(traceback.format_exc()))
