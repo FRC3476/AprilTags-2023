@@ -1,13 +1,16 @@
+import os
 import subprocess
 import time
 import traceback
 from datetime import datetime
 
+import cv2
+
 import camera
 import cameraconfig
+import event_logger
 import graphics
 import network
-import orange_logger
 
 timestamp = str(datetime.now().strftime("%Y_%m_%d_%H_%M_%S"))
 with open("/var/www/AprilTags/logs/" + f"{timestamp}_log.txt", 'w') as write_file:
@@ -42,17 +45,17 @@ with open("/var/www/AprilTags/logs/" + f"{timestamp}_log.txt", 'w') as write_fil
                     cam_config.update_config()
 
             except Exception:
-                orange_logger.write_exception(write_file, traceback)
+                event_logger.write_exception(write_file, traceback)
                 continue
 
             try:
                 # Create a new camera
                 cam = camera.Camera(cam_config)
-                orange_logger.write_event(write_file, "Camera created!")
+                event_logger.write_event(write_file, "Camera created!")
             except Exception:
                 # Try again if camera failed to initialize
                 # Next run needs to be in first_initialization mode because it may try to terminate an inproperly initialized camera
-                orange_logger.write_exception(write_file, traceback)
+                event_logger.write_exception(write_file, traceback)
                 first_initialization = True
                 continue
 
@@ -75,13 +78,13 @@ with open("/var/www/AprilTags/logs/" + f"{timestamp}_log.txt", 'w') as write_fil
 
                 # Runs this ffmpeg script in a subprocess
                 p = subprocess.Popen(command, stdin=subprocess.PIPE)
-                orange_logger.write_event(write_file, "Stream Started")
+                event_logger.write_event(write_file, "Stream Started")
                 first_stream = False
 
             if not first_record:
                 video_file.release()
 
-            if False:
+            if cam_config.record_video:
                 # Check for user directory in media
                 dirs = os.listdir("/media")
 
@@ -90,7 +93,7 @@ with open("/var/www/AprilTags/logs/" + f"{timestamp}_log.txt", 'w') as write_fil
                     userdirs = os.listdir("/media/" + str(dirs[0]))
                 else:
                     network.send_status("No user directory found for saving video to flash drive.")
-                    orange_logger.write_event(write_file, "No user directory found for saving video to flash drive.")
+                    event_logger.write_event(write_file, "No user directory found for saving video to flash drive.")
                     network.force_disable_recording()
                     continue
 
@@ -98,7 +101,7 @@ with open("/var/www/AprilTags/logs/" + f"{timestamp}_log.txt", 'w') as write_fil
                     drivename = "/media/" + str(dirs[0]) + "/" + str(userdirs[0]) + "/"
                 else:
                     network.send_status("No flash drive plugged in to store video.")
-                    orange_logger.write_event(write_file, "No flash drive plugged in to store video.")
+                    event_logger.write_event(write_file, "No flash drive plugged in to store video.")
                     network.force_disable_recording()
                     continue
 
@@ -110,11 +113,11 @@ with open("/var/www/AprilTags/logs/" + f"{timestamp}_log.txt", 'w') as write_fil
                                                  (cam_config.x_resolution, cam_config.y_resolution))
                 except Exception:
                     network.send_status("Could not write to flash drive file")
-                    orange_logger.write_exception(write_file, traceback)
+                    event_logger.write_exception(write_file, traceback)
                     network.force_disable_recording()
 
                 network.send_status("Recording Video As: " + drivename + hourminutesecond + ".mkv")
-                orange_logger.write_event(write_file, "Recording Video As: " + drivename + hourminutesecond + ".mkv")
+                event_logger.write_event(write_file, "Recording Video As: " + drivename + hourminutesecond + ".mkv")
                 first_record = False
 
             initialize = False
@@ -131,7 +134,7 @@ with open("/var/www/AprilTags/logs/" + f"{timestamp}_log.txt", 'w') as write_fil
             network.send_status("Error when processing frames. " + str(traceback.format_exc()))
             # Go back to the top of the loop if failed
             # Tries to reinitialize the camera if it could not find a frame
-            orange_logger.write_exception(write_file, traceback)
+            event_logger.write_exception(write_file, traceback)
             initialize = True
             continue
 
@@ -145,14 +148,14 @@ with open("/var/www/AprilTags/logs/" + f"{timestamp}_log.txt", 'w') as write_fil
                 network.log_pos(detection.tag_id, detection.pose_t[0], detection.pose_t[1], detection.pose_t[2],
                                 detection.pose_R, timestamp)
 
-        if False:
+        if cam_config.record_video:
             # Writes frame to video file
             record_frame = cv2.cvtColor(color_frame, cv2.COLOR_RGB2BGR)
             try:
                 video_file.write(record_frame)
             except Exception as e:
                 network.send_status("Could not write frame to file.")
-                orange_logger.write_exception(write_file, traceback)
+                event_logger.write_exception(write_file, traceback)
                 network.force_disable_recording()
 
         if cam_config.do_stream:
@@ -161,7 +164,7 @@ with open("/var/www/AprilTags/logs/" + f"{timestamp}_log.txt", 'w') as write_fil
                 p.stdin.write(color_frame.tobytes())
             except (Exception):
                 network.send_status("WARNING: Could not send frame to stream. " + str(traceback.format_exc()))
-                orange_logger.write_exception(write_file, traceback)
+                event_logger.write_exception(write_file, traceback)
 
         # End of profiling
         network.log_looptime(time.time() - start_time)
